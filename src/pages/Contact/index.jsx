@@ -93,7 +93,7 @@ export default function ContactPage({ pageData }) {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
             gap: 72,
             alignItems: "start",
           }}
