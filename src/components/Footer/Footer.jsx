@@ -62,8 +62,8 @@ export default function Footer({ setPage }) {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "2fr 1fr 1fr 1fr",
-            gap: 40,
+            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+            gap: 32,
             marginBottom: 48,
           }}
         >
@@ -102,7 +102,7 @@ export default function Footer({ setPage }) {
                 color: C.slate,
                 fontSize: 14,
                 lineHeight: 1.7,
-                maxWidth: 260,
+                maxWidth: "100%",
               }}
             >
               We don't just build websites — we build systems that turn traffic
@@ -171,7 +171,8 @@ export default function Footer({ setPage }) {
             justifyContent: "space-between",
             alignItems: "center",
             flexWrap: "wrap",
-            gap: 16,
+            rowGap: 12,
+            columnGap: 24,
           }}
         >
           <span style={{ color: C.slate, fontSize: 13 }}>

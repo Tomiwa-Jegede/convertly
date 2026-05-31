@@ -34,7 +34,7 @@ export default function AboutPage({ setPage }) {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr 1fr",
+              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
               gap: 72,
               alignItems: "center",
               marginBottom: 100,
@@ -47,6 +47,7 @@ export default function AboutPage({ setPage }) {
               <h1
                 style={{
                   fontSize: "clamp(30px, 4.5vw, 52px)",
+                  textAlign: "center",
                   fontWeight: 800,
                   letterSpacing: "-0.03em",
                   marginBottom: 24,
@@ -89,12 +90,11 @@ export default function AboutPage({ setPage }) {
                 <Icon name="arrow" size={16} color={C.indigoDark} />
               </button>
             </div>
-            <div className="hide-mobile">
+            <div>
               <div
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: 16,
+                  maxWidth: 650,
+                  margin: "0 auto",
                 }}
               >
                 {[
@@ -157,7 +157,7 @@ export default function AboutPage({ setPage }) {
           <div
             className="card-glass"
             style={{
-              padding: "48px 40px",
+              padding: "clamp(24px, 5vw, 48px)",
               marginBottom: 80,
               background: "rgba(34,211,238,0.03)",
               borderColor: "rgba(34,211,238,0.15)",
@@ -166,7 +166,7 @@ export default function AboutPage({ setPage }) {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr",
+                gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
                 gap: 48,
                 alignItems: "center",
               }}
@@ -274,8 +274,9 @@ export default function AboutPage({ setPage }) {
                 <FadeIn key={year} delay={i * 0.1}>
                   <div
                     style={{
-                      display: "flex",
-                      gap: 32,
+                      display: "grid",
+                      gridTemplateColumns: "56px 1fr",
+                      gap: 24,
                       paddingBottom: 40,
                       position: "relative",
                     }}
@@ -335,7 +336,7 @@ export default function AboutPage({ setPage }) {
                           color: C.slate,
                           fontSize: 15,
                           lineHeight: 1.7,
-                          maxWidth: 500,
+                          maxWidth: "100%",
                         }}
                       >
                         {desc}
@@ -353,7 +354,7 @@ export default function AboutPage({ setPage }) {
           <div
             style={{
               textAlign: "center",
-              padding: "60px 40px",
+              padding: "clamp(32px, 5vw, 60px)",
               background:
                 "linear-gradient(135deg, rgba(34,211,238,0.07), rgba(16,185,129,0.04))",
               borderRadius: 24,
@@ -364,7 +365,7 @@ export default function AboutPage({ setPage }) {
               style={{
                 fontFamily: "Syne",
                 fontWeight: 800,
-                fontSize: 32,
+                fontSize: "clamp(24px, 5vw, 32px)",
                 marginBottom: 16,
                 letterSpacing: "-0.02em",
               }}

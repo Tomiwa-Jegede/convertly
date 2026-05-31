@@ -37,7 +37,7 @@ export default function ContactPage({ pageData }) {
   });
 
   const [status, setStatus] = useState("idle");
-
+  const isMobile = window.innerWidth < 768;
   useEffect(() => {
     setForm((prev) => ({
       ...prev,
@@ -93,7 +93,7 @@ export default function ContactPage({ pageData }) {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr 1.1fr",
+            gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))",
             gap: 72,
             alignItems: "start",
           }}
@@ -166,6 +166,7 @@ export default function ContactPage({ pageData }) {
                       display: "flex",
                       alignItems: "center",
                       gap: 16,
+                      flexWrap: "wrap",
                     }}
                   >
                     <div
@@ -216,7 +217,7 @@ export default function ContactPage({ pageData }) {
               <div
                 className="card-glass"
                 style={{
-                  padding: 24,
+                  padding: 20,
                   borderColor: `${C.emerald}25`,
                 }}
               >
@@ -261,7 +262,10 @@ export default function ContactPage({ pageData }) {
           <FadeIn delay={0.15}>
             <div
               className="card-glass"
-              style={{ padding: "40px 36px", borderRadius: 20 }}
+              style={{
+                padding: "32px 24px",
+                borderRadius: 20,
+              }}
             >
               <AnimatePresence mode="wait">
                 {status === "success" ? (
