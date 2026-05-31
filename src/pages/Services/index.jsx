@@ -278,7 +278,7 @@ export default function ServicesPage({ setPage }) {
               }}
             >
               Our full-stack Conversion System packages combine everything into
-              one integrated revenue engine, starting at ₦250k.
+              one integrated revenue engine, starting at $1499.99
             </p>
             <button
               className="btn-primary glow-cyan"
