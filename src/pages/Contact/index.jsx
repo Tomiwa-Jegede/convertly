@@ -45,47 +45,44 @@ export default function ContactPage({ pageData }) {
     }));
   }, [selectedService]);
 
-  const handleSubmit = async () => {
-    if (!form.name || !form.contact || !form.problem) {
-      alert("Please complete all required fields.");
-      return;
-    }
+const handleSubmit = async () => {
+  if (!form.name || !form.contact || !form.problem) {
+    alert("Please complete all required fields.");
+    return;
+  }
 
-    setStatus("loading");
+  setStatus("loading");
 
-    try {
-      const payload = {
-        name: form.name,
-        businessType: form.businessType,
-        service: form.service,
-        contact: form.contact,
-        problem: form.problem,
-        submittedAt: new Date().toISOString(),
-      };
+  try {
+    const payload = {
+      name: form.name,
+      businessType: form.businessType,
+      service: form.service,
+      contact: form.contact,
+      problem: form.problem,
+      submittedAt: new Date().toISOString(),
+    };
 
-      const res = await fetch(FORM_ENDPOINT, {
-        method: "POST",
-        body: JSON.stringify(payload),
-      });
+    await fetch(FORM_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify(payload),
+    }).catch(() => {});
 
-      const data = await res.json().catch(() => null);
+    setStatus("success");
 
-      console.log("Response:", data);
-
-      setStatus("success");
-
-      setForm({
-        name: "",
-        businessType: "",
-        service: "",
-        contact: "",
-        problem: "",
-      });
-    } catch (err) {
-      console.error(err);
-      setStatus("error");
-    }
-  };
+    setForm({
+      name: "",
+      businessType: "",
+      service: "",
+      contact: "",
+      problem: "",
+    });
+  } catch (err) {
+    console.error(err);
+    setStatus("error");
+  }
+};
 
   return (
     <div style={{ paddingTop: 120, paddingBottom: 80 }}>
@@ -93,7 +90,7 @@ export default function ContactPage({ pageData }) {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(420px, 1fr))",
             gap: 72,
             alignItems: "start",
           }}
