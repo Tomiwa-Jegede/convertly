@@ -21,10 +21,14 @@ export default function App() {
     localStorage.setItem("pageData", JSON.stringify(data));
   };
 
-useEffect(() => {
-  localStorage.setItem("page", page);
-  localStorage.setItem("pageData", JSON.stringify(pageData));
-}, [page, pageData]);
+  useEffect(() => {
+    localStorage.setItem("page", page);
+    localStorage.setItem("pageData", JSON.stringify(pageData));
+  }, [page, pageData]);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [page]);
 
   return (
     <RootLayout page={page} setPage={navigate}>
