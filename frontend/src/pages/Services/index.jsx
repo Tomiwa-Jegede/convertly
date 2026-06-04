@@ -2,7 +2,8 @@ import { motion } from "framer-motion";
 import FadeIn from "../../utils/FadeIn";
 import { Icon } from "../../components";
 import C from "../../styles/colors";
-
+import { useState } from "react";
+import Checkout from "../Checkout/checkout.jsx";
 const services = [
   {
     icon: "globe",
@@ -48,7 +49,7 @@ const services = [
     color: "#FB923C",
     title: "Lead Tracking Dashboards",
     price: "From $299.99",
-    features: [ 
+    features: [
       "Google Sheets CRM setup",
       "Lead source tracking",
       "Conversion rate analytics",
@@ -85,6 +86,41 @@ const services = [
 ];
 
 export default function ServicesPage({ setPage }) {
+  const API_URL = import.meta.env.VITE_API_URL;
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState(null);
+
+  const [customerName, setCustomerName] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  async function handlePayment() {
+    try {
+      const response = await fetch(`${API_URL}/api/create-payment-link`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productName: selectedService,
+          customerName,
+          customerEmail,
+          customerPhone,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!data.paymentLink) {
+        console.error("No payment link returned:", data);
+        return;
+      }
+
+      window.location.href = data.paymentLink;
+    } catch (err) {
+      console.error("Payment error:", err);
+    }
+  }
+
   return (
     <div style={{ paddingTop: 120, paddingBottom: 80 }}>
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px" }}>
@@ -227,11 +263,10 @@ export default function ServicesPage({ setPage }) {
                 </ul>
                 <button
                   className="btn-secondary"
-                  onClick={() =>
-                    setPage("Contact", {
-                      service: title,
-                    })
-                  }
+                  onClick={() => {
+                    setSelectedService(title);
+                    setIsCheckoutOpen(true);
+                  }}
                   style={{
                     marginTop: 24,
                     width: "100%",
@@ -282,17 +317,28 @@ export default function ServicesPage({ setPage }) {
             </p>
             <button
               className="btn-primary glow-cyan"
-              onClick={() =>
-                setPage("Contact", {
-                  service: "Full Bundle Package",
-                })
-              }
+              onClick={() => {
+                setSelectedService("Full Bundle Package");
+                setIsCheckoutOpen(true);
+              }}
             >
               Get a Custom Quote{" "}
               <Icon name="arrow" size={16} color={C.indigoDark} />
             </button>
           </div>
         </FadeIn>
+        <Checkout
+          isOpen={isCheckoutOpen}
+          onClose={() => setIsCheckoutOpen(false)}
+          selectedService={selectedService}
+          customerName={customerName}
+          setCustomerName={setCustomerName}
+          customerEmail={customerEmail}
+          setCustomerEmail={setCustomerEmail}
+          customerPhone={customerPhone}
+          setCustomerPhone={setCustomerPhone}
+          onSubmit={handlePayment}
+        />
       </div>
     </div>
   );

@@ -6,6 +6,12 @@ import "./styles/global.css";
 
 export default function App() {
   const [page, setPage] = useState(() => {
+    const path = window.location.pathname;
+
+    if (path === "/success") {
+      return "Success";
+    }
+
     return localStorage.getItem("page") || "Home";
   });
 

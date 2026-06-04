@@ -2,12 +2,12 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["frontend/src/*"]
     },
     "jsx": "react-jsx",
     "module": "ESNext",
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": false
   },
-  "include": ["src"]
+  "include": ["frontend/src"]
 }

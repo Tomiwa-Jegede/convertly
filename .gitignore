@@ -29,3 +29,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Customer/payment data
+customers.json
+processedEvents.json
+
+# Backend env
+backend/.env
+
+# Frontend env
+frontend/.env
+frontend/.env.local
