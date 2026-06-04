@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 
-export default function SuccessPage({ setPage }) {
+export default function SuccessPage() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   const transactionId = searchParams.get("transaction_id");
   const status = searchParams.get("status");
@@ -11,8 +12,7 @@ export default function SuccessPage({ setPage }) {
 
   useEffect(() => {
     if (countdown <= 0) {
-      setPage("Home");
-      window.history.replaceState({}, "", "/");
+      navigate("/");
       return;
     }
 
@@ -21,7 +21,7 @@ export default function SuccessPage({ setPage }) {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [countdown, setPage]);
+  }, [countdown, navigate]);
 
   return (
     <div
@@ -85,26 +85,6 @@ export default function SuccessPage({ setPage }) {
             }}
           />
         </div>
-
-        {/* <button
-          onClick={() => {
-            setPage("Home");
-            window.history.pushState({}, "", "/");
-          }}
-          style={{
-            padding: "12px 20px",
-            borderRadius: "10px",
-            border: "none",
-            cursor: "pointer",
-            background: "#22d3ee",
-            color: "#000",
-            fontWeight: "bold",
-            width: "100%",
-            maxWidth: "200px",
-          }}
-        >
-          Go Home Now
-        </button> */}
       </div>
     </div>
   );

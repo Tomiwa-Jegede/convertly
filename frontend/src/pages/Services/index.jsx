@@ -4,6 +4,7 @@ import { Icon } from "../../components";
 import C from "../../styles/colors";
 import { useState } from "react";
 import Checkout from "../Checkout/checkout.jsx";
+
 const services = [
   {
     icon: "globe",
@@ -85,14 +86,16 @@ const services = [
   },
 ];
 
-export default function ServicesPage({ setPage }) {
+export default function ServicesPage() {
   const API_URL = import.meta.env.VITE_API_URL;
+
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [selectedService, setSelectedService] = useState(null);
 
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
+
   async function handlePayment() {
     try {
       const response = await fetch(`${API_URL}/api/create-payment-link`, {
@@ -129,6 +132,7 @@ export default function ServicesPage({ setPage }) {
             <div className="section-label" style={{ margin: "0 auto 20px" }}>
               <Icon name="layers" size={12} color={C.cyan} /> What We Build
             </div>
+
             <h1
               style={{
                 fontSize: "clamp(32px, 5vw, 58px)",
@@ -139,6 +143,7 @@ export default function ServicesPage({ setPage }) {
             >
               Systems, not just <span className="glow-text">websites</span>
             </h1>
+
             <p
               style={{
                 color: C.slate,
@@ -196,6 +201,7 @@ export default function ServicesPage({ setPage }) {
                   >
                     <Icon name={icon} size={24} color={color} />
                   </div>
+
                   <span
                     style={{
                       fontFamily: "Syne",
@@ -211,6 +217,7 @@ export default function ServicesPage({ setPage }) {
                     {price}
                   </span>
                 </div>
+
                 <h3
                   style={{
                     fontFamily: "Syne",
@@ -223,6 +230,7 @@ export default function ServicesPage({ setPage }) {
                 >
                   {title}
                 </h3>
+
                 <ul
                   style={{
                     listStyle: "none",
@@ -261,6 +269,7 @@ export default function ServicesPage({ setPage }) {
                     </li>
                   ))}
                 </ul>
+
                 <button
                   className="btn-secondary"
                   onClick={() => {
@@ -303,6 +312,7 @@ export default function ServicesPage({ setPage }) {
             >
               Want everything bundled?
             </h3>
+
             <p
               style={{
                 color: C.slate,
@@ -315,6 +325,7 @@ export default function ServicesPage({ setPage }) {
               Our full-stack Conversion System packages combine everything into
               one integrated revenue engine, starting at $1499.99
             </p>
+
             <button
               className="btn-primary glow-cyan"
               onClick={() => {
@@ -327,6 +338,7 @@ export default function ServicesPage({ setPage }) {
             </button>
           </div>
         </FadeIn>
+
         <Checkout
           isOpen={isCheckoutOpen}
           onClose={() => setIsCheckoutOpen(false)}

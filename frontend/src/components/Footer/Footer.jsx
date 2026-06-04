@@ -1,9 +1,13 @@
+import { useNavigate } from "react-router-dom";
 import Icon from "../Icon/Icon";
 import C from "../../styles/colors";
+
 const contactEmail = import.meta.env.VITE_CONTACT_EMAIL;
 const whatsappNumber = import.meta.env.VITE_WHATSAPP_NUMBER;
 
-export default function Footer({ setPage }) {
+export default function Footer() {
+  const navigate = useNavigate();
+
   const handleFooterLink = (link) => {
     switch (link) {
       case "Conversion Websites":
@@ -11,23 +15,18 @@ export default function Footer({ setPage }) {
       case "Booking Systems":
       case "Lead Tracking":
       case "Social Automation":
-        setPage("Services");
-        break;
-
-      case "About":
-        setPage("About");
-        break;
-
       case "Services":
-        setPage("Services");
+        navigate("/services");
         break;
 
       case "Contact":
-        setPage("Contact");
+      case "Book a Demo":
+      case "Free Consultation":
+        navigate("/contact");
         break;
 
-      case "Book a Demo":
-        setPage("Contact");
+      case "About":
+        navigate("/AboutPage");
         break;
 
       case "WhatsApp Us":
@@ -39,10 +38,6 @@ export default function Footer({ setPage }) {
 
       case "Email Us":
         window.location.href = `mailto:${contactEmail}`;
-        break;
-
-      case "Free Consultation":
-        setPage("Contact");
         break;
 
       default:
@@ -76,7 +71,7 @@ export default function Footer({ setPage }) {
                 marginBottom: 16,
                 cursor: "pointer",
               }}
-              onClick={() => setPage("Home")}
+              onClick={() => navigate("/")}
             >
               <div
                 style={{
@@ -91,12 +86,18 @@ export default function Footer({ setPage }) {
               >
                 <Icon name="zap" size={18} color="#0F0C29" />
               </div>
+
               <span
-                style={{ fontFamily: "Syne", fontWeight: 800, fontSize: 18 }}
+                style={{
+                  fontFamily: "Syne",
+                  fontWeight: 800,
+                  fontSize: 18,
+                }}
               >
                 Convertly<span style={{ color: C.cyan }}>.</span>
               </span>
             </div>
+
             <p
               style={{
                 color: C.slate,
@@ -109,6 +110,7 @@ export default function Footer({ setPage }) {
               into revenue.
             </p>
           </div>
+
           {[
             {
               title: "Services",
@@ -140,8 +142,13 @@ export default function Footer({ setPage }) {
               >
                 {title}
               </div>
+
               <div
-                style={{ display: "flex", flexDirection: "column", gap: 10 }}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 10,
+                }}
               >
                 {links.map((l) => (
                   <span
@@ -163,6 +170,7 @@ export default function Footer({ setPage }) {
             </div>
           ))}
         </div>
+
         <div
           style={{
             borderTop: "1px solid rgba(255,255,255,0.05)",
@@ -178,6 +186,7 @@ export default function Footer({ setPage }) {
           <span style={{ color: C.slate, fontSize: 13 }}>
             © {new Date().getFullYear()} Convertly Systems. All rights reserved.
           </span>
+
           <span style={{ color: C.slate, fontSize: 13 }}>
             Built to convert. Designed to scale.
           </span>

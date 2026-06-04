@@ -1,17 +1,33 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate, useLocation } from "react-router-dom";
+
 import Icon from "../Icon/Icon";
 import { navLinks } from "../../data/navigation";
 import C from "../../styles/colors";
 
-export default function Navbar({ page, setPage }) {
+export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const navigate = useNavigate();
+  const location = useLocation();
+
+ const routeMap = {
+   Home: "/",
+   Services: "/services",
+   Contact: "/contact",
+   About: "/about",
+ };
+
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 40);
+
     window.addEventListener("scroll", handler);
-    return () => window.removeEventListener("scroll", handler);
+
+    return () => {
+      window.removeEventListener("scroll", handler);
+    };
   }, []);
 
   return (
@@ -41,7 +57,7 @@ export default function Navbar({ page, setPage }) {
       >
         {/* Logo */}
         <motion.div
-          onClick={() => setPage("Home")}
+          onClick={() => navigate("/")}
           style={{
             cursor: "pointer",
             display: "flex",
@@ -63,6 +79,7 @@ export default function Navbar({ page, setPage }) {
           >
             <Icon name="zap" size={18} color="#0F0C29" />
           </div>
+
           <span
             style={{
               fontFamily: "Syne",
@@ -78,17 +95,23 @@ export default function Navbar({ page, setPage }) {
         {/* Desktop Links */}
         <div
           className="hide-mobile"
-          style={{ display: "flex", gap: 36, alignItems: "center" }}
+          style={{
+            display: "flex",
+            gap: 36,
+            alignItems: "center",
+          }}
         >
           {navLinks.map((l) => (
             <button
               key={l}
-              className={`nav-link ${page === l ? "active" : ""}`}
-              onClick={() => setPage(l)}
+              className={`nav-link ${
+                location.pathname === routeMap[l] ? "active" : ""
+              }`}
+              onClick={() => navigate(routeMap[l])}
               style={{
                 fontFamily: "Syne",
                 fontWeight: 600,
-                color: page === l ? C.white : C.slate,
+                color: location.pathname === routeMap[l] ? C.white : C.slate,
               }}
             >
               {l}
@@ -96,13 +119,23 @@ export default function Navbar({ page, setPage }) {
           ))}
         </div>
 
-        <div className="hide-mobile" style={{ display: "flex", gap: 12 }}>
+        {/* CTA */}
+        <div
+          className="hide-mobile"
+          style={{
+            display: "flex",
+            gap: 12,
+          }}
+        >
           <button
             className="btn-secondary"
-            style={{ padding: "10px 20px", fontSize: 14 }}
-            onClick={() => setPage("Contact")}
+            style={{
+              padding: "10px 20px",
+              fontSize: 14,
+            }}
+            onClick={() => navigate("/contact")}
           >
-            Book a Demo
+            Get Started
           </button>
         </div>
 
@@ -146,7 +179,7 @@ export default function Navbar({ page, setPage }) {
                 key={l}
                 className="nav-link"
                 onClick={() => {
-                  setPage(l);
+                  navigate(routeMap[l]);
                   setMobileOpen(false);
                 }}
                 style={{
@@ -159,15 +192,16 @@ export default function Navbar({ page, setPage }) {
                 {l}
               </button>
             ))}
+
             <button
               className="btn-primary"
               style={{ width: "fit-content" }}
               onClick={() => {
-                setPage("Contact");
+                navigate("/contact");
                 setMobileOpen(false);
               }}
             >
-              Book a Demo
+              Get Started
             </button>
           </motion.div>
         )}

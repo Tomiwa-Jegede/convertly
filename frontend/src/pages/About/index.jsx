@@ -2,6 +2,7 @@ import FadeIn from "../../utils/FadeIn";
 import { Icon } from "../../components";
 import C from "../../styles/colors";
 
+
 const timeline = [
   {
     year: "2023",
@@ -25,7 +26,10 @@ const timeline = [
   },
 ];
 
-export default function AboutPage({ setPage }) {
+import { useNavigate } from "react-router-dom";
+
+export default function AboutPage() {
+  const navigate = useNavigate();
   return (
     <div style={{ paddingTop: 120, paddingBottom: 80 }}>
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px" }}>
@@ -84,7 +88,7 @@ export default function AboutPage({ setPage }) {
               </p>
               <button
                 className="btn-primary"
-                onClick={() => setPage("Contact")}
+                onClick={() => navigate("/contact")}
               >
                 Work With Us{" "}
                 <Icon name="arrow" size={16} color={C.indigoDark} />
@@ -386,7 +390,7 @@ export default function AboutPage({ setPage }) {
             </p>
             <button
               className="btn-primary glow-cyan"
-              onClick={() => setPage("Contact")}
+              onClick={() => navigate("/contact")}
               style={{ fontSize: 16, padding: "16px 32px" }}
             >
               Start the Conversation{" "}
