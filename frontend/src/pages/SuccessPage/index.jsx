@@ -5,8 +5,12 @@ export default function SuccessPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const transactionId = searchParams.get("transaction_id");
-  const status = searchParams.get("status");
+  // ✅ Safe fallbacks (prevents any undefined issues)
+  const transactionId = searchParams.get("transaction_id") || "Not provided";
+
+  const status = searchParams.get("status") || "completed";
+
+  const txRef = searchParams.get("tx_ref") || "";
 
   const [countdown, setCountdown] = useState(5);
 
@@ -54,12 +58,26 @@ export default function SuccessPage() {
             color: "#22d3ee",
           }}
         >
-          Payment Successful ✅ <br /> your onboarding email will be sent
+          Payment Successful ✅ <br />
+          Your onboarding email will be sent
         </h1>
 
-        <p style={{ color: "white", marginBottom: "10px" }}>
+        {/* Status */}
+        <p style={{ color: "#cbd5e1", marginBottom: "10px" }}>
+          Status: <b style={{ color: "#22d3ee" }}>{status}</b>
+        </p>
+
+        {/* Transaction ID */}
+        <p style={{ color: "white", marginBottom: "6px" }}>
           Transaction ID: {transactionId}
         </p>
+
+        {/* Tx Ref (optional but useful) */}
+        {txRef && (
+          <p style={{ color: "#94a3b8", marginBottom: "10px", fontSize: 13 }}>
+            Reference: {txRef}
+          </p>
+        )}
 
         <p style={{ color: "#cbd5e1", marginBottom: "20px" }}>
           Redirecting home in <b>{countdown}</b> seconds...
@@ -85,6 +103,23 @@ export default function SuccessPage() {
             }}
           />
         </div>
+
+        {/* Optional manual button */}
+        <button
+          onClick={() => navigate("/")}
+          style={{
+            marginTop: 10,
+            padding: "10px 18px",
+            borderRadius: 10,
+            border: "none",
+            cursor: "pointer",
+            background: "#22d3ee",
+            color: "#0f172a",
+            fontWeight: 600,
+          }}
+        >
+          Go Home Now
+        </button>
       </div>
     </div>
   );
