@@ -9,7 +9,7 @@ const services = [
     icon: "globe",
     color: C.cyan,
     title: "Conversion Websites for Listings",
-    price: "From $399.99",
+    price: "From ₦100",
     features: [
       "Mobile-first responsive design",
       "Built-in booking forms",
