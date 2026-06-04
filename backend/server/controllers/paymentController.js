@@ -10,7 +10,7 @@ const { readJSON, writeJSON } = require("../utils/jsonStore");
 
 // ─── PRODUCT CATALOGUE ─────────────────────────────────────────────
 const PRODUCTS = {
-  "Conversion Websites for Listings": 50,
+  "Conversion Websites for Listings": 100,
   "AI Customer Response Bots": 399.99,
   "Booking System Integration": 199.99,
   "Lead Tracking Dashboards": 299.99,
