@@ -20,19 +20,26 @@ export default function Checkout({
 }) {
   const [loading, setLoading] = useState(false);
   const [showRetry, setShowRetry] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState(
+    "Connecting to payment gateway...",
+  );
   if (!isOpen) return null;
 
   const handleSubmit = async () => {
+    setLoading(true);
     setShowRetry(false);
-
-    const result = await onSubmit();
-
-    if (result === false) {
-      return;
-    }
+    setLoadingMessage("Connecting to payment gateway...");
 
     try {
-      setLoading(true);
+      const result = await onSubmit();
+
+      if (result?.success === false) {
+        setLoadingMessage(result.message);
+        setTimeout(() => {
+          setLoading(false);
+        }, 2000);
+        return;
+      }
 
       const timeout = setTimeout(() => {
         setLoading(false);
@@ -44,8 +51,11 @@ export default function Checkout({
       clearTimeout(timeout);
     } catch (err) {
       console.error(err);
-      setLoading(false);
-      setShowRetry(true);
+      setLoadingMessage("Unable to connect to payment gateway.");
+
+      setTimeout(() => {
+        setLoading(false);
+      }, 2000);
     }
   };
 
@@ -128,7 +138,7 @@ export default function Checkout({
                   textAlign: "center",
                 }}
               >
-                Connecting to payment gateway...
+                {loadingMessage}
               </p>
             </motion.div>
           )}

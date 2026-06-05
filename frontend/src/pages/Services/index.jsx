@@ -5,7 +5,6 @@ import C from "../../styles/colors";
 import { useState } from "react";
 import Checkout from "../Checkout/checkout.jsx";
 
-
 const services = [
   {
     icon: "globe",
@@ -156,16 +155,6 @@ export default function ServicesPage() {
       window.location.href = data.paymentLink;
     } catch (err) {
       clearTimeout(timeoutId);
-
-      if (err.name === "AbortError") {
-        setFormError(
-          "The payment gateway is taking too long to respond. Please try again.",
-        );
-      } else {
-        setFormError(
-          "Unable to connect to the payment gateway. Please try again.",
-        );
-      }
 
       console.error("Payment Error:", err);
       throw err;
