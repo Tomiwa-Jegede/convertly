@@ -6,9 +6,10 @@ export default function SuccessPage() {
   const navigate = useNavigate();
 
   // ✅ Safe fallbacks (prevents any undefined issues)
-  const transactionId = searchParams.get("transaction_id") || "Not provided";
+  const transactionId = searchParams.get("transaction_id");
+  const status = searchParams.get("status");
 
-  const status = searchParams.get("status") || "completed";
+  const isSuccessful = status === "completed";
 
   const txRef = searchParams.get("tx_ref") || "";
 
@@ -55,13 +56,16 @@ export default function SuccessPage() {
           style={{
             fontSize: "clamp(28px, 4vw, 48px)",
             marginBottom: "10px",
-            color: "#22d3ee",
+            color: isSuccessful ? "#22d3ee" : "#f59e0b",
           }}
         >
-          Payment Successful ✅ <br />
-          Your onboarding email will be sent
+          {isSuccessful ? "Payment Successful ✅" : "Payment Cancelled ❌"}
         </h1>
-
+        <p style={{ color: "white", marginBottom: "20px" }}>
+          {isSuccessful
+            ? "Your onboarding email will be sent shortly."
+            : "No payment was processed."}
+        </p>
         {/* Status */}
         <p style={{ color: "#cbd5e1", marginBottom: "10px" }}>
           Status: <b style={{ color: "#22d3ee" }}>{status}</b>

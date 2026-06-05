@@ -2,6 +2,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import C from "../../styles/colors";
 import Icon from "../../components/Icon/Icon";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 
 export default function Checkout({
   isOpen,
@@ -13,19 +15,37 @@ export default function Checkout({
   setCustomerEmail,
   customerPhone,
   setCustomerPhone,
+  formError,
   onSubmit,
 }) {
   const [loading, setLoading] = useState(false);
-
+  const [showRetry, setShowRetry] = useState(false);
   if (!isOpen) return null;
 
   const handleSubmit = async () => {
+    setShowRetry(false);
+
+    const result = await onSubmit();
+
+    if (result === false) {
+      return;
+    }
+
     try {
       setLoading(true);
-      await onSubmit();
+
+      const timeout = setTimeout(() => {
+        setLoading(false);
+        setShowRetry(true);
+      }, 15000);
+
+      await result;
+
+      clearTimeout(timeout);
     } catch (err) {
       console.error(err);
       setLoading(false);
+      setShowRetry(true);
     }
   };
 
@@ -68,16 +88,16 @@ export default function Checkout({
               style={{
                 position: "absolute",
                 inset: 0,
-
                 backdropFilter: "blur(10px)",
                 display: "flex",
+                flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
                 zIndex: 999,
                 background: "rgba(2, 6, 23, 0.12)",
+                gap: 20,
               }}
             >
-              {/* Heartbeat Logo */}
               <motion.div
                 animate={{
                   scale: [1, 1.25, 1],
@@ -100,7 +120,70 @@ export default function Checkout({
               >
                 <Icon name="zap" size={34} color="#0F0C29" />
               </motion.div>
+
+              <p
+                style={{
+                  color: "white",
+                  fontSize: 14,
+                  textAlign: "center",
+                }}
+              >
+                Connecting to payment gateway...
+              </p>
             </motion.div>
+          )}
+          {showRetry && (
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                backdropFilter: "blur(10px)",
+                background: "rgba(2, 6, 23, 0.12)",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 20,
+                zIndex: 1000,
+                padding: 20,
+              }}
+            >
+              <p
+                style={{
+                  color: "white",
+                  textAlign: "center",
+                  lineHeight: 1.6,
+                  maxWidth: 280,
+                }}
+              >
+                Connection is taking longer than expected.
+                <br />
+                Please try again.
+              </p>
+
+              <div
+                style={{
+                  display: "flex",
+                  gap: 10,
+                }}
+              >
+                <button
+                  className="btn-secondary"
+                  onClick={() => {
+                    setShowRetry(false);
+                  }}
+                >
+                  Close
+                </button>
+
+                <button
+                  className="btn-primary glow-cyan"
+                  onClick={handleSubmit}
+                >
+                  Try Again
+                </button>
+              </div>
+            </div>
           )}
         </AnimatePresence>
 
@@ -119,6 +202,23 @@ export default function Checkout({
             {selectedService}
           </p>
 
+          {formError && (
+            <div
+              style={{
+                background: "rgba(239,68,68,0.12)",
+                border: "1px solid rgba(239,68,68,0.3)",
+                color: "#ef4444",
+                padding: "12px",
+                borderRadius: "10px",
+                marginBottom: "16px",
+                textAlign: "center",
+                fontSize: "14px",
+              }}
+            >
+              {formError}
+            </div>
+          )}
+
           <input
             type="text"
             placeholder="Full Name"
@@ -135,19 +235,35 @@ export default function Checkout({
             }}
           />
 
-          <input
-            type="tel"
-            placeholder="Phone Number"
+          <PhoneInput
+            country="us"
             value={customerPhone}
-            onChange={(e) => setCustomerPhone(e.target.value)}
-            style={{
-              width: "100%",
-              padding: 12,
+            onChange={(phone) => setCustomerPhone(phone)}
+            enableSearch
+            placeholder="Enter phone number"
+            containerStyle={{
               marginBottom: 18,
-              borderRadius: 10,
-              border: "1px solid rgba(255,255,255,0.1)",
+            }}
+            inputStyle={{
+              width: "100%",
+              height: "48px",
+              borderRadius: "10px",
               background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.1)",
               color: "white",
+            }}
+            buttonStyle={{
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.1)",
+            }}
+            dropdownStyle={{
+              background: "#ffffff",
+              color: "#0f172a",
+              border: "#ffffff",
+            }}
+            searchStyle={{
+              background: "#ffffff",
+              color: "#0f172a",
             }}
           />
 
@@ -169,7 +285,11 @@ export default function Checkout({
 
           <div style={{ display: "flex", gap: 10 }}>
             <button
-              onClick={onClose}
+              onClick={() => {
+                setLoading(false);
+                setShowRetry(false);
+                onClose();
+              }}
               className="btn-secondary"
               style={{ flex: 1 }}
             >

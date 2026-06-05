@@ -5,6 +5,7 @@ import C from "../../styles/colors";
 import { useState } from "react";
 import Checkout from "../Checkout/checkout.jsx";
 
+
 const services = [
   {
     icon: "globe",
@@ -95,14 +96,43 @@ export default function ServicesPage() {
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
-
+  const [formError, setFormError] = useState("");
   async function handlePayment() {
+    setFormError("");
+
+    if (!customerName.trim()) {
+      setFormError("Please enter your full name.");
+      return false;
+    }
+
+    if (!customerPhone.trim()) {
+      setFormError("Please enter your phone number.");
+      return false;
+    }
+
+    if (!customerEmail.trim()) {
+      setFormError("Please enter your email address.");
+      return false;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(customerEmail)) {
+      setFormError("Please enter a valid email address.");
+      return false;
+    }
+
+    const controller = new AbortController();
+
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+    }, 15000);
+
     try {
       const response = await fetch(`${API_URL}/api/create-payment-link`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        signal: controller.signal,
         body: JSON.stringify({
           productName: selectedService,
           customerName,
@@ -111,16 +141,34 @@ export default function ServicesPage() {
         }),
       });
 
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error("Failed to create payment link");
+      }
+
       const data = await response.json();
 
       if (!data.paymentLink) {
-        console.error("No payment link returned:", data);
-        return;
+        throw new Error("Payment link not returned");
       }
 
       window.location.href = data.paymentLink;
     } catch (err) {
-      console.error("Payment error:", err);
+      clearTimeout(timeoutId);
+
+      if (err.name === "AbortError") {
+        setFormError(
+          "The payment gateway is taking too long to respond. Please try again.",
+        );
+      } else {
+        setFormError(
+          "Unable to connect to the payment gateway. Please try again.",
+        );
+      }
+
+      console.error("Payment Error:", err);
+      throw err;
     }
   }
 
@@ -349,6 +397,7 @@ export default function ServicesPage() {
           setCustomerEmail={setCustomerEmail}
           customerPhone={customerPhone}
           setCustomerPhone={setCustomerPhone}
+          formError={formError}
           onSubmit={handlePayment}
         />
       </div>
