@@ -177,19 +177,25 @@ async function handleWebhook(req, res) {
     });
 
     // ── SEND EMAIL (IMPORTANT PART) ──
+    // ── SEND EMAIL ──
     console.log("Customer Name:", customerName);
     console.log("Customer Email:", customerEmail);
     console.log("Product:", product);
     console.log("Transaction:", transactionId);
-    console.log("📧 Sending onboarding email...");
 
-    await sendOnboardingEmail({
-      customerName,
-      customerEmail,
-      token,
-    });
+    try {
+      console.log("📧 Sending onboarding email...");
 
-    console.log("✅ Email sent successfully");
+      await sendOnboardingEmail({
+        customerName,
+        customerEmail,
+        token,
+      });
+
+      console.log("✅ Email sent successfully");
+    } catch (emailErr) {
+      console.error("❌ EMAIL ERROR:", emailErr);
+    }
 
     return res.status(200).json({ received: true });
   } catch (err) {
