@@ -27,9 +27,13 @@ async function readJSON(filename) {
  * Write a JSON array to a data file (pretty-printed, atomic-ish write).
  */
 async function writeJSON(filename, data) {
+  await fs.mkdir(DATA_DIR, { recursive: true });
+
   const filePath = path.join(DATA_DIR, filename);
   const tmp = `${filePath}.tmp`;
+
   await fs.writeFile(tmp, JSON.stringify(data, null, 2), "utf8");
+
   await fs.rename(tmp, filePath);
 }
 
