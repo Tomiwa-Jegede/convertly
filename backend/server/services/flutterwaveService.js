@@ -26,7 +26,7 @@ async function createFlutterwavePaymentLink({
   const payload = {
     tx_ref: txRef,
     amount: amount,
-    currency: "USD",
+    currency: "NGN",
     redirect_url: `${process.env.FRONTEND_URL}/success`,
     meta: {
       product_name: productName,
