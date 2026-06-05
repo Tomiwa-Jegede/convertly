@@ -74,6 +74,7 @@ async function createPaymentLink(req, res, next) {
 async function handleWebhook(req, res) {
   console.log("🔥 WEBHOOK RECEIVED");
 
+  console.log("Headers:", req.headers);
   try {
     // ── verify flutterwave signature ──
     const hash = req.headers["verif-hash"];
@@ -126,6 +127,7 @@ async function handleWebhook(req, res) {
     const customerEmail =
       sanitize(verified.meta?.customer_email) ||
       sanitize(verified.customer?.email);
+
     const customerName =
       sanitize(verified.meta?.customer_name) ||
       sanitize(verified.customer?.name) ||
@@ -175,6 +177,10 @@ async function handleWebhook(req, res) {
     });
 
     // ── SEND EMAIL (IMPORTANT PART) ──
+    console.log("Customer Name:", customerName);
+    console.log("Customer Email:", customerEmail);
+    console.log("Product:", product);
+    console.log("Transaction:", transactionId);
     console.log("📧 Sending onboarding email...");
 
     await sendOnboardingEmail({
