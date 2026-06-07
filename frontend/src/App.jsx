@@ -8,7 +8,7 @@ import ServicesPage from "./pages/Services";
 import ContactPage from "./pages/Contact";
 import SuccessPage from "./pages/SuccessPage";
 import AboutPage from "./pages/About";
-import Onboarding from "./pages/Onboarding";
+import Onboarding from "./pages/onboarding";
 
 import "./styles/global.css";
 
