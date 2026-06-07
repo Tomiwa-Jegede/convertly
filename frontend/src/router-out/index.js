@@ -4,7 +4,7 @@ import HomePage from "../pages/Home";
 import ServicesPage from "../pages/Services";
 import ContactPage from "../pages/Contact";
 import SuccessPage from "../pages/SuccessPage";
-import Onboarding from "./pages/Onboarding";
+import Onboarding from "./pages/OnBoarding";
 
 export default function Router() {
   return (
