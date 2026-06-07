@@ -2,9 +2,6 @@ const axios = require("axios");
 const { v4: uuidv4 } = require("uuid");
 const FLW_BASE = "https://api.flutterwave.com/v3";
 
-console.log("FLW_SECRET_KEY exists:", !!process.env.FLW_SECRET_KEY);
-console.log("FRONTEND_URL:", process.env.FRONTEND_URL);
-
 // ─── Slugify helper ───────────────────────────────────────────────────────────
 function slugify(str) {
   return str
@@ -46,8 +43,6 @@ async function createFlutterwavePaymentLink({
     },
     payment_options: "card,banktransfer,ussd",
   };
-
-  console.log("FLW Payload:", JSON.stringify(payload, null, 2));
 
   const response = await axios.post(`${FLW_BASE}/payments`, payload, {
     headers: {

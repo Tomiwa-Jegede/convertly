@@ -8,6 +8,7 @@ import ServicesPage from "./pages/Services";
 import ContactPage from "./pages/Contact";
 import SuccessPage from "./pages/SuccessPage";
 import AboutPage from "./pages/About";
+import Onboarding from "./pages/Onboarding";
 
 import "./styles/global.css";
 
@@ -21,6 +22,7 @@ export default function App() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/success" element={<SuccessPage />} />
+          <Route path="/onboarding" element={<Onboarding />} />
         </Routes>
       </AnimatePresence>
     </RootLayout>

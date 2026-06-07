@@ -53,7 +53,7 @@ async function createPaymentLink(req, res, next) {
     if (!amount) {
       return res.status(400).json({ error: "Unknown product" });
     }
-    console.log("Customer email from frontend:", customerEmail);
+
     const paymentLink = await createFlutterwavePaymentLink({
       productName,
       customerName,
@@ -74,7 +74,7 @@ async function createPaymentLink(req, res, next) {
 async function handleWebhook(req, res) {
   console.log("🔥 WEBHOOK RECEIVED");
 
-  console.log("Headers:", req.headers);
+
   try {
     // ── verify flutterwave signature ──
     const hash = req.headers["verif-hash"];
@@ -92,7 +92,6 @@ async function handleWebhook(req, res) {
       return res.status(200).json({ received: true });
     }
 
-    console.log("📦 Event:", payload.event);
 
     const data = payload?.data;
     if (!data) {
@@ -120,10 +119,7 @@ async function handleWebhook(req, res) {
     if (!verified || verified.status !== "successful") {
       return res.status(200).json({ received: true });
     }
-    console.log(
-      "Verified customer:",
-      JSON.stringify(verified.customer, null, 2),
-    );
+ 
     const customerEmail =
       sanitize(verified.meta?.customer_email) ||
       sanitize(verified.customer?.email);
@@ -178,11 +174,7 @@ async function handleWebhook(req, res) {
 
     // ── SEND EMAIL (IMPORTANT PART) ──
     // ── SEND EMAIL ──
-    console.log("Customer Name:", customerName);
-    console.log("Customer Email:", customerEmail);
-    console.log("Product:", product);
-    console.log("Transaction:", transactionId);
-
+ 
     try {
       console.log("📧 Sending onboarding email...");
 

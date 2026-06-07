@@ -83,6 +83,10 @@ async function appendOnboarding({
   goals,
   currentProblems,
   additionalNotes,
+  product,
+  folderId,
+  folderName,
+  folderUrl,
 }) {
   try {
     await appendRow(ONBOARDING_SHEET, [
@@ -94,12 +98,15 @@ async function appendOnboarding({
       goals,
       currentProblems,
       additionalNotes,
+      product,
+      folderId,
+      folderName,
+      folderUrl,
     ]);
+
     console.log(`[SHEETS] ✅ Onboarding appended for ${customerEmail}`);
   } catch (err) {
-    // Non-fatal: log but don't throw — form data is already saved locally
     console.error("[SHEETS] Failed to append onboarding row:", err.message);
   }
 }
-
 module.exports = { appendPurchase, appendOnboarding };
