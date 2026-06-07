@@ -40,3 +40,10 @@ backend/.env
 # Frontend env
 frontend/.env
 frontend/.env.local
+
+# 🔐 Credentials & secrets (IMPORTANT FIX)
+backend/credentials/
+**/credentials/
+*.credentials.json
+token.json
+oauth.json
