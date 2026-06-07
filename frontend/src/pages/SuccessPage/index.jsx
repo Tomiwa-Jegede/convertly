@@ -9,7 +9,7 @@ export default function SuccessPage() {
   const transactionId = searchParams.get("transaction_id");
   const status = searchParams.get("status");
 
-  const isSuccessful = status === "completed";
+  const isSuccessful = status === "successful" || status === "success";
 
   const txRef = searchParams.get("tx_ref") || "";
 

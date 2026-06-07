@@ -19,6 +19,7 @@ export default function Checkout({
   onSubmit,
 }) {
   const [loading, setLoading] = useState(false);
+  const [validationError, setValidationError] = useState("");
   const [showRetry, setShowRetry] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState(
     "Connecting to payment gateway...",
@@ -26,36 +27,40 @@ export default function Checkout({
   if (!isOpen) return null;
 
   const handleSubmit = async () => {
+    if (!customerName?.trim()) {
+      setValidationError("Please enter your Full Name");
+      return;
+    }
+
+    if (!customerEmail?.trim()) {
+      setValidationError("Please enter your Email Address");
+      return;
+    }
+
+    if (!customerPhone?.trim()) {
+      setValidationError("Please enter your Phone Number");
+      return;
+    }
+
+    const emailValid = /\S+@\S+\.\S+/.test(customerEmail);
+
+    if (!emailValid) {
+      setValidationError("Please enter a valid Email Address");
+      return;
+    }
+
+    setValidationError("");
+
     setLoading(true);
     setShowRetry(false);
     setLoadingMessage("Connecting to payment gateway...");
 
     try {
-      const result = await onSubmit();
-
-      if (result?.success === false) {
-        setLoadingMessage(result.message);
-        setTimeout(() => {
-          setLoading(false);
-        }, 2000);
-        return;
-      }
-
-      const timeout = setTimeout(() => {
-        setLoading(false);
-        setShowRetry(true);
-      }, 15000);
-
-      await result;
-
-      clearTimeout(timeout);
+      await onSubmit();
     } catch (err) {
       console.error(err);
       setLoadingMessage("Unable to connect to payment gateway.");
-
-      setTimeout(() => {
-        setLoading(false);
-      }, 2000);
+      setTimeout(() => setLoading(false), 2000);
     }
   };
 
@@ -207,6 +212,23 @@ export default function Checkout({
           <h2 style={{ color: C.cyan, fontFamily: "Syne", marginBottom: 6 }}>
             Checkout
           </h2>
+
+          {validationError && (
+            <div
+              style={{
+                background: "rgba(239,68,68,0.12)",
+                border: "1px solid rgba(239,68,68,0.3)",
+                color: "#ef4444",
+                padding: "12px",
+                borderRadius: "10px",
+                marginBottom: "16px",
+                textAlign: "center",
+                fontSize: "14px",
+              }}
+            >
+              {validationError}
+            </div>
+          )}
 
           <p style={{ color: C.slate, fontSize: 13, marginBottom: 20 }}>
             {selectedService}
