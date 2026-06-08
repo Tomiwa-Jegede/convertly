@@ -5,16 +5,33 @@ export default function SuccessPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  // ✅ Safe fallbacks (prevents any undefined issues)
-  const transactionId = searchParams.get("transaction_id");
-  const status = searchParams.get("status");
+  // ✅ ALWAYS declare params first
+  const transactionId = searchParams.get("transaction_id") || "";
+  const status = searchParams.get("status") || "";
+  const txRef = searchParams.get("tx_ref") || "";
 
   const isSuccessful = status === "successful" || status === "success";
 
-  const txRef = searchParams.get("tx_ref") || "";
-
   const [countdown, setCountdown] = useState(5);
 
+  // ✅ payment confirmation
+  useEffect(() => {
+    async function confirm() {
+      try {
+        await fetch(`${import.meta.env.VITE_API_URL}/api/confirm-payment`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: txRef }),
+        });
+      } catch (err) {
+        console.error("Payment confirm failed:", err);
+      }
+    }
+
+    if (txRef) confirm();
+  }, [txRef]);
+
+  // countdown redirect
   useEffect(() => {
     if (countdown <= 0) {
       navigate("/");
@@ -61,22 +78,21 @@ export default function SuccessPage() {
         >
           {isSuccessful ? "Payment Successful ✅" : "Payment Cancelled ❌"}
         </h1>
+
         <p style={{ color: "white", marginBottom: "20px" }}>
           {isSuccessful
             ? "Your onboarding email will be sent shortly."
             : "No payment was processed."}
         </p>
-        {/* Status */}
+
         <p style={{ color: "#cbd5e1", marginBottom: "10px" }}>
           Status: <b style={{ color: "#22d3ee" }}>{status}</b>
         </p>
 
-        {/* Transaction ID */}
         <p style={{ color: "white", marginBottom: "6px" }}>
           Transaction ID: {transactionId}
         </p>
 
-        {/* Tx Ref (optional but useful) */}
         {txRef && (
           <p style={{ color: "#94a3b8", marginBottom: "10px", fontSize: 13 }}>
             Reference: {txRef}
@@ -87,7 +103,6 @@ export default function SuccessPage() {
           Redirecting home in <b>{countdown}</b> seconds...
         </p>
 
-        {/* progress bar */}
         <div
           style={{
             height: "6px",
@@ -108,7 +123,6 @@ export default function SuccessPage() {
           />
         </div>
 
-        {/* Optional manual button */}
         <button
           onClick={() => navigate("/")}
           style={{

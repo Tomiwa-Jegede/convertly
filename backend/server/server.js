@@ -6,7 +6,6 @@ require("dotenv").config();
 const app = express();
 const onboardingRoutes = require("./routes/onboarding");
 
-
 // IMPORTANT: raw body for webhook
 app.use("/api/flutterwave/webhook", express.raw({ type: "application/json" }));
 
@@ -15,7 +14,7 @@ app.use(express.json());
 
 const allowedOrigins = [
   process.env.FRONTEND_URL,
-  "http://localhost:3000",
+  "http://localhost:3001",
   "http://localhost:5173",
 ].filter(Boolean);
 
@@ -43,4 +42,3 @@ const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
-

@@ -71,55 +71,84 @@ async function createPaymentLink(req, res, next) {
 // ───────────────────────────────────────────────────────────────────
 // WEBHOOK HANDLER (FIXED)
 // ───────────────────────────────────────────────────────────────────
-async function handleWebhook(req, res) {
-  console.log("🔥 WEBHOOK RECEIVED");
 
+async function handleWebhook(req, res) {
+  console.log("\n🔥🔥 WEBHOOK RECEIVED 🔥🔥");
 
   try {
-    // ── verify flutterwave signature ──
+    console.log("📦 HEADERS:", req.headers);
+
+    // 1. Verify signature
     const hash = req.headers["verif-hash"];
+    console.log("🔐 Webhook Hash:", hash);
+
     if (!hash || hash !== process.env.FLW_WEBHOOK_HASH) {
       console.log("❌ Invalid webhook hash");
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    // ── parse raw body safely ──
+    // 2. Parse payload safely (FIXED)
     let payload;
+
     try {
-      payload = JSON.parse(req.body.toString("utf8"));
+      if (Buffer.isBuffer(req.body)) {
+        payload = JSON.parse(req.body.toString("utf8"));
+      } else if (typeof req.body === "string") {
+        payload = JSON.parse(req.body);
+      } else {
+        payload = req.body;
+      }
     } catch (err) {
-      console.log("❌ Invalid JSON body");
+      console.log("❌ JSON PARSE ERROR:", err.message);
       return res.status(200).json({ received: true });
     }
 
+    console.log("📦 PARSED PAYLOAD:", JSON.stringify(payload, null, 2));
 
     const data = payload?.data;
+
     if (!data) {
-      console.log("❌ No data found");
+      console.log("❌ No data object in payload");
       return res.status(200).json({ received: true });
     }
 
-    // only handle successful payments
+    console.log("💰 PAYMENT DATA:", data);
+
+    // 3. Only successful payments
     if (payload.event !== "charge.completed" || data.status !== "successful") {
+      console.log(
+        "⚠️ Ignoring non-successful event:",
+        payload.event,
+        data.status,
+      );
       return res.status(200).json({ received: true });
     }
 
     const transactionId = String(data.id);
     const txRef = data.tx_ref;
 
-    // ── prevent duplicates ──
+    console.log("🧾 Transaction ID:", transactionId);
+    console.log("🔗 TX REF:", txRef);
+
+    // 4. Prevent duplicates
     const processed = await readJSON("processedEvents.json");
+
     if (processed.includes(transactionId)) {
+      console.log("⚠️ Duplicate transaction ignored");
       return res.status(200).json({ received: true });
     }
 
-    // ── verify transaction from flutterwave ──
+    // 5. Verify transaction
+    console.log("🔍 Verifying transaction...");
     const verified = await verifyTransaction(transactionId);
 
+    console.log("✅ VERIFIED RESPONSE:", verified);
+
     if (!verified || verified.status !== "successful") {
+      console.log("❌ Verification failed");
       return res.status(200).json({ received: true });
     }
- 
+
     const customerEmail =
       sanitize(verified.meta?.customer_email) ||
       sanitize(verified.customer?.email);
@@ -128,16 +157,19 @@ async function handleWebhook(req, res) {
       sanitize(verified.meta?.customer_name) ||
       sanitize(verified.customer?.name) ||
       "";
-    const customerPhone = sanitize(verified.customer?.phone_number || "");
 
+    const customerPhone = sanitize(verified.customer?.phone_number || "");
     const amount = verified.amount;
     const currency = verified.currency;
-
-    let product = verified.meta?.product_name || "Unknown Product";
+    const product = verified.meta?.product_name || "Unknown Product";
 
     const token = generateToken();
 
-    // ── save customer record ──
+    console.log("🎟 GENERATED TOKEN:", token);
+
+    // 6. Save to JSON (backup DB)
+    const customers = await readJSON("customers.json");
+
     const record = {
       transactionId,
       txRef,
@@ -152,14 +184,15 @@ async function handleWebhook(req, res) {
       createdAt: new Date().toISOString(),
     };
 
-    const customers = await readJSON("customers.json");
     customers.push(record);
     await writeJSON("customers.json", customers);
 
     processed.push(transactionId);
     await writeJSON("processedEvents.json", processed);
 
-    // ── save to sheets ──
+    // 7. SAVE TO GOOGLE SHEETS (IMPORTANT DEBUG STEP)
+    console.log("📊 Writing to Google Sheets...");
+
     await appendPurchase({
       timestamp: record.createdAt,
       paymentStatus: "successful",
@@ -170,28 +203,26 @@ async function handleWebhook(req, res) {
       customerPhone,
       product,
       amount,
+      token,
+      folderId: "",
     });
 
-    // ── SEND EMAIL (IMPORTANT PART) ──
-    // ── SEND EMAIL ──
- 
-    try {
-      console.log("📧 Sending onboarding email...");
+    console.log("📊 Google Sheets write complete");
 
-      await sendOnboardingEmail({
-        customerName,
-        customerEmail,
-        token,
-      });
+    // 8. Email
+    console.log("📧 Sending onboarding email...");
 
-      console.log("✅ Email sent successfully");
-    } catch (emailErr) {
-      console.error("❌ EMAIL ERROR:", emailErr);
-    }
+    await sendOnboardingEmail({
+      customerName,
+      customerEmail,
+      token,
+    });
+
+    console.log("✅ EMAIL SENT");
 
     return res.status(200).json({ received: true });
   } catch (err) {
-    console.error("🔥 WEBHOOK ERROR:", err.message);
+    console.error("🔥 WEBHOOK CRASH:", err);
     return res.status(200).json({ received: true });
   }
 }
