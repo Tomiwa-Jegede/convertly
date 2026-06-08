@@ -1,27 +1,37 @@
 const { google } = require("googleapis");
 const fs = require("fs");
 const path = require("path");
+function getAuthFromEnv() {
+  if (!process.env.GOOGLE_OAUTH_CLIENT || !process.env.GOOGLE_TOKEN) {
+    throw new Error("Missing Google OAuth env vars");
+  }
 
-const credentials = JSON.parse(
-  fs.readFileSync(path.join(__dirname, "../../credentials/oauth.json")),
-);
+  const credentials = JSON.parse(process.env.GOOGLE_OAUTH_CLIENT);
+  const token = JSON.parse(process.env.GOOGLE_TOKEN);
 
-const token = JSON.parse(
-  fs.readFileSync(path.join(__dirname, "../../credentials/token.json")),
-);
+  const { client_id, client_secret, redirect_uris } = credentials.installed;
 
-const { client_secret, client_id, redirect_uris } = credentials.installed;
+  const auth = new google.auth.OAuth2(
+    client_id,
+    client_secret,
+    redirect_uris[0],
+  );
 
-const auth = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
+  auth.setCredentials(token);
 
-auth.setCredentials(token);
+  return auth;
+}
 
-const drive = google.drive({
-  version: "v3",
-  auth,
-});
+function getDrive() {
+  return google.drive({
+    version: "v3",
+    auth: getAuthFromEnv(),
+  });
+}
 
 async function createClientFolder(customerName, token) {
+  const drive = getDrive();
+
   const folder = await drive.files.create({
     requestBody: {
       name: `${customerName}-${token}`,
@@ -35,28 +45,37 @@ async function createClientFolder(customerName, token) {
 }
 
 async function uploadFile(folderId, filePath, fileName) {
-  const file = await drive.files.create({
-    requestBody: {
-      name: fileName,
-      parents: [folderId],
-    },
+  const drive = getDrive();
 
-    media: {
-      body: fs.createReadStream(filePath),
-    },
 
-    fields: "id,name,webViewLink",
-  });
-
-  // DELETE LOCAL TEMP FILE AFTER SUCCESSFUL UPLOAD
   try {
-    fs.unlinkSync(filePath);
-    console.log(`🗑 Deleted local file: ${filePath}`);
-  } catch (err) {
-    console.error("Failed to delete local file:", err.message);
-  }
+    const file = await drive.files.create({
+      requestBody: {
+        name: fileName,
+        parents: [folderId],
+      },
+      media: {
+        body: fs.createReadStream(filePath),
+      },
+      fields: "id,name,webViewLink",
+    });
 
-  return file.data;
+    console.log("✅ DRIVE UPLOAD SUCCESS:", file.data);
+
+    return file.data;
+  } catch (err) {
+    console.error("❌ DRIVE UPLOAD FAILED:");
+    console.error(err.response?.data || err.message || err);
+
+    throw err;
+  } finally {
+    try {
+      fs.unlinkSync(filePath);
+      console.log(`🗑 Deleted: ${filePath}`);
+    } catch (e) {
+      console.error("Delete error:", e.message);
+    }
+  }
 }
 
 module.exports = {
