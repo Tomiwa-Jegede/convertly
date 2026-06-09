@@ -4,25 +4,35 @@ const helmet = require("helmet");
 require("dotenv").config();
 
 const app = express();
+
 const onboardingRoutes = require("./routes/onboarding");
 
-// IMPORTANT: raw body for webhook
+// IMPORTANT: webhook RAW body MUST come before JSON middleware
+app.use("/api/flutterwave/webhook", (req, res, next) => {
+  next();
+});
+
 app.use("/api/flutterwave/webhook", express.raw({ type: "application/json" }));
 
-// normal JSON
-app.use(express.json());
-
+// CORS DEBUG
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   "http://localhost:3001",
   "http://localhost:5173",
 ].filter(Boolean);
 
+app.use((req, res, next) => {
+  next();
+});
+
 app.use(
   cors({
     origin: function (origin, callback) {
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
       return callback(null, false);
     },
     methods: ["GET", "POST", "OPTIONS"],
@@ -33,12 +43,21 @@ app.use(
 
 app.use(helmet());
 
-// ROUTES
+// JSON AFTER webhook raw middleware
+app.use((req, res, next) => {
+  next();
+});
+
+app.use(express.json());
+
+// ROUTES LOADING
+
 app.use("/api", require("./routes/payment"));
 app.use("/api", require("./routes/customer"));
-app.use("/api", onboardingRoutes);
+app.use("/api/onboarding", onboardingRoutes);
+
 const PORT = process.env.PORT || 5001;
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+app.listen(PORT, () => {});
+
+console.log(`🚀 Server running on port ${PORT}`);

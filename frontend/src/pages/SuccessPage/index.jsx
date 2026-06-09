@@ -5,34 +5,47 @@ export default function SuccessPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  // ✅ ALWAYS declare params first
   const transactionId = searchParams.get("transaction_id") || "";
-  const status = searchParams.get("status") || "";
   const txRef = searchParams.get("tx_ref") || "";
 
-  const isSuccessful = status === "successful" || status === "success";
+  // ✅ 3-state system
+  const [status, setStatus] = useState("loading");
+  // loading | success | failed
 
   const [countdown, setCountdown] = useState(5);
 
   // ✅ payment confirmation
-  useEffect(() => {
-    async function confirm() {
-      try {
-        await fetch(`${import.meta.env.VITE_API_URL}/api/confirm-payment`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token: txRef }),
-        });
-      } catch (err) {
-        console.error("Payment confirm failed:", err);
-      }
+useEffect(() => {
+  async function confirm() {
+    if (!txRef) {
+      setStatus("failed");
+      return;
     }
 
-    if (txRef) confirm();
-  }, [txRef]);
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/confirm-payment/${transactionId}`,
+        {
+          method: "GET",
+        },
+      );
 
-  // countdown redirect
+      const data = await res.json();
+
+      setStatus(data.success === true ? "success" : "failed");
+    } catch (err) {
+      console.error(err);
+      setStatus("failed");
+    }
+  }
+
+  confirm();
+}, [txRef, transactionId]);
+
+  // countdown redirect (only on success or failed, not loading)
   useEffect(() => {
+    if (status === "loading") return;
+
     if (countdown <= 0) {
       navigate("/");
       return;
@@ -43,7 +56,13 @@ export default function SuccessPage() {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [countdown, navigate]);
+  }, [countdown, navigate, status]);
+
+  const isSuccess = status === "success";
+
+  if (status === "loading") {
+    return <div style={{ color: "white" }}>Verifying payment...</div>;
+  }
 
   return (
     <div
@@ -73,20 +92,23 @@ export default function SuccessPage() {
           style={{
             fontSize: "clamp(28px, 4vw, 48px)",
             marginBottom: "10px",
-            color: isSuccessful ? "#22d3ee" : "#f59e0b",
+            color: isSuccess ? "#22d3ee" : "#ef4444",
           }}
         >
-          {isSuccessful ? "Payment Successful ✅" : "Payment Cancelled ❌"}
+          {isSuccess ? "Payment Successful ✅" : "Payment Failed ❌"}
         </h1>
 
         <p style={{ color: "white", marginBottom: "20px" }}>
-          {isSuccessful
+          {isSuccess
             ? "Your onboarding email will be sent shortly."
-            : "No payment was processed."}
+            : "Payment was not completed or verification failed."}
         </p>
 
         <p style={{ color: "#cbd5e1", marginBottom: "10px" }}>
-          Status: <b style={{ color: "#22d3ee" }}>{status}</b>
+          Status:{" "}
+          <b style={{ color: isSuccess ? "#22d3ee" : "#ef4444" }}>
+            {status.toUpperCase()}
+          </b>
         </p>
 
         <p style={{ color: "white", marginBottom: "6px" }}>
@@ -117,7 +139,7 @@ export default function SuccessPage() {
             style={{
               height: "100%",
               width: `${(countdown / 5) * 100}%`,
-              background: "#22d3ee",
+              background: isSuccess ? "#22d3ee" : "#ef4444",
               transition: "width 1s linear",
             }}
           />
@@ -131,7 +153,7 @@ export default function SuccessPage() {
             borderRadius: 10,
             border: "none",
             cursor: "pointer",
-            background: "#22d3ee",
+            background: isSuccess ? "#22d3ee" : "#ef4444",
             color: "#0f172a",
             fontWeight: 600,
           }}

@@ -44,9 +44,10 @@ async function createClientFolder(customerName, token) {
   return folder.data;
 }
 
-async function uploadFile(folderId, filePath, fileName) {
-  const drive = getDrive();
+const { Readable } = require("stream");
 
+async function uploadFile(folderId, fileBuffer, fileName) {
+  const drive = getDrive();
 
   try {
     const file = await drive.files.create({
@@ -55,7 +56,7 @@ async function uploadFile(folderId, filePath, fileName) {
         parents: [folderId],
       },
       media: {
-        body: fs.createReadStream(filePath),
+        body: Readable.from(fileBuffer),
       },
       fields: "id,name,webViewLink",
     });
@@ -66,15 +67,7 @@ async function uploadFile(folderId, filePath, fileName) {
   } catch (err) {
     console.error("❌ DRIVE UPLOAD FAILED:");
     console.error(err.response?.data || err.message || err);
-
     throw err;
-  } finally {
-    try {
-      fs.unlinkSync(filePath);
-      console.log(`🗑 Deleted: ${filePath}`);
-    } catch (e) {
-      console.error("Delete error:", e.message);
-    }
   }
 }
 
