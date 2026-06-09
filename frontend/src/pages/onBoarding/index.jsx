@@ -107,10 +107,14 @@ export default function Onboarding() {
 
       const formData = new FormData();
 
-      formData.append("token", customer.token);
-      formData.append("customerName", customer.customerName);
-      formData.append("customerEmail", customer.customerEmail);
-      formData.append("product", customer.product);
+      if (!customer) {
+        throw new Error("Customer data not loaded yet");
+      }
+
+      formData.append("token", customer.token || "");
+      formData.append("customerName", customer.customerName || "");
+      formData.append("customerEmail", customer.customerEmail || "");
+      formData.append("product", customer.product || "");
 
       Object.entries(form).forEach(([key, value]) => {
         if (key !== "files") {
