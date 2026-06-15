@@ -58,12 +58,19 @@ async function getExchangeRates() {
   }
 
   try {
-    const response = await axios.get(
-      "https://api.frankfurter.app/latest?from=USD&to=NGN,GBP,EUR,GHS,KES,ZAR,CAD,AUD",
-      { timeout: 8000 },
-    );
+    const response = await axios.get("https://open.er-api.com/v6/latest/USD", {
+      timeout: 8000,
+    });
 
-    const rates = { USD: 1, ...response.data.rates };
+    const all = response.data.rates;
+    const needed = ["NGN", "GBP", "EUR", "GHS", "KES", "ZAR", "CAD", "AUD"];
+    const rates = { USD: 1 };
+    needed.forEach((c) => {
+      if (all[c]) rates[c] = all[c];
+    });
+
+    console.log("✅ [getExchangeRates] Fetched rates:", rates);
+
     rateCache.rates = rates;
     rateCache.lastFetched = now;
     return rates;
