@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const {
   detectCurrencyFromIP,
+  detectCurrencyFromCountry, // ✅ ADD THIS
   getPricingForCurrency,
   SUPPORTED_CURRENCIES,
 } = require("../services/currencyService");
