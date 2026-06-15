@@ -2,7 +2,6 @@ const axios = require("axios");
 const { v4: uuidv4 } = require("uuid");
 const FLW_BASE = "https://api.flutterwave.com/v3";
 
-// ─── Slugify helper ───────────────────────────────────────────────────────────
 function slugify(str) {
   return str
     .toLowerCase()
@@ -10,26 +9,27 @@ function slugify(str) {
     .replace(/^-|-$/g, "");
 }
 
-// ─── Create Flutterwave Standard Payment Link ─────────────────────────────────
 async function createFlutterwavePaymentLink({
   productName,
   customerName,
   customerEmail,
   customerPhone,
   amount,
+  currency = "USD", // ← NEW: was hardcoded, now a parameter
+  txRef,
 }) {
-  const txRef = `CONV-${slugify(productName)}-${uuidv4()}`;
+  const ref = txRef || `CONV-${slugify(productName)}-${uuidv4()}`;
 
   const payload = {
-    tx_ref: txRef,
+    tx_ref: ref,
     amount: amount,
-    currency: "USD",
+    currency: currency, // ← NEW: dynamic
     redirect_url: `${process.env.FRONTEND_URL}/success`,
     meta: {
       product_name: productName,
       customer_email: customerEmail,
       customer_name: customerName,
-      tx_ref: txRef,
+      tx_ref: ref,
     },
     customer: {
       email: customerEmail,
@@ -61,7 +61,6 @@ async function createFlutterwavePaymentLink({
   return response.data.data.link;
 }
 
-// ─── Verify Transaction via Flutterwave API ───────────────────────────────────
 async function verifyTransaction(transactionId) {
   const response = await axios.get(
     `${FLW_BASE}/transactions/${transactionId}/verify`,

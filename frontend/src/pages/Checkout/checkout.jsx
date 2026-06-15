@@ -4,6 +4,7 @@ import C from "../../styles/colors";
 import Icon from "../../components/Icon/Icon";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
+import { useCurrency } from "../../context/CurrencyContext"; // ← NEW
 
 export default function Checkout({
   isOpen,
@@ -24,6 +25,9 @@ export default function Checkout({
   const [loadingMessage, setLoadingMessage] = useState(
     "Connecting to payment gateway...",
   );
+
+  const { currency, symbol } = useCurrency(); // ← NEW
+
   if (!isOpen) return null;
 
   const handleSubmit = async () => {
@@ -43,14 +47,12 @@ export default function Checkout({
     }
 
     const emailValid = /\S+@\S+\.\S+/.test(customerEmail);
-
     if (!emailValid) {
       setValidationError("Please enter a valid Email Address");
       return;
     }
 
     setValidationError("");
-
     setLoading(true);
     setShowRetry(false);
     setLoadingMessage("Connecting to payment gateway...");
@@ -93,7 +95,7 @@ export default function Checkout({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* 🔥 FULL SCREEN LOADING OVERLAY */}
+        {/* FULL SCREEN LOADING OVERLAY */}
         <AnimatePresence>
           {loading && (
             <motion.div
@@ -114,9 +116,7 @@ export default function Checkout({
               }}
             >
               <motion.div
-                animate={{
-                  scale: [1, 1.25, 1],
-                }}
+                animate={{ scale: [1, 1.25, 1] }}
                 transition={{
                   duration: 0.8,
                   repeat: Infinity,
@@ -136,17 +136,12 @@ export default function Checkout({
                 <Icon name="zap" size={34} color="#0F0C29" />
               </motion.div>
 
-              <p
-                style={{
-                  color: "white",
-                  fontSize: 14,
-                  textAlign: "center",
-                }}
-              >
+              <p style={{ color: "white", fontSize: 14, textAlign: "center" }}>
                 {loadingMessage}
               </p>
             </motion.div>
           )}
+
           {showRetry && (
             <div
               style={{
@@ -176,21 +171,13 @@ export default function Checkout({
                 Please try again.
               </p>
 
-              <div
-                style={{
-                  display: "flex",
-                  gap: 10,
-                }}
-              >
+              <div style={{ display: "flex", gap: 10 }}>
                 <button
                   className="btn-secondary"
-                  onClick={() => {
-                    setShowRetry(false);
-                  }}
+                  onClick={() => setShowRetry(false)}
                 >
                   Close
                 </button>
-
                 <button
                   className="btn-primary glow-cyan"
                   onClick={handleSubmit}
@@ -202,7 +189,7 @@ export default function Checkout({
           )}
         </AnimatePresence>
 
-        {/* FORM CONTENT (dims under loader) */}
+        {/* FORM CONTENT */}
         <div
           style={{
             opacity: loading ? 0.2 : 1,
@@ -230,8 +217,20 @@ export default function Checkout({
             </div>
           )}
 
-          <p style={{ color: C.slate, fontSize: 13, marginBottom: 20 }}>
+          <p style={{ color: C.slate, fontSize: 13, marginBottom: 4 }}>
             {selectedService}
+          </p>
+
+          {/* ← NEW: currency indicator */}
+          <p
+            style={{
+              color: C.slate,
+              fontSize: 11,
+              marginBottom: 20,
+              opacity: 0.6,
+            }}
+          >
+            You will be charged in {currency} ({symbol})
           </p>
 
           {formError && (
@@ -273,9 +272,7 @@ export default function Checkout({
             onChange={(phone) => setCustomerPhone(phone)}
             enableSearch
             placeholder="Enter phone number"
-            containerStyle={{
-              marginBottom: 18,
-            }}
+            containerStyle={{ marginBottom: 18 }}
             inputStyle={{
               width: "100%",
               height: "48px",
@@ -293,10 +290,7 @@ export default function Checkout({
               color: "#0f172a",
               border: "#ffffff",
             }}
-            searchStyle={{
-              background: "#ffffff",
-              color: "#0f172a",
-            }}
+            searchStyle={{ background: "#ffffff", color: "#0f172a" }}
           />
 
           <input

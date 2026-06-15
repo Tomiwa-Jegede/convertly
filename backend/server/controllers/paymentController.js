@@ -7,8 +7,9 @@ const { appendPurchase } = require("../services/sheetsService");
 const { sendOnboardingEmail } = require("../services/emailService");
 const { generateToken } = require("../utils/generateToken");
 const { readJSON, writeJSON } = require("../utils/jsonStore");
+const { convertFromUSD } = require("../services/currencyService"); // ← NEW
 
-// PRODUCTS
+// PRODUCTS — prices always stored in USD (source of truth)
 const PRODUCTS = {
   "Conversion Websites for Listings": 399.99,
   "AI Customer Response Bots": 399.99,
@@ -22,14 +23,22 @@ const PRODUCTS = {
 // CREATE PAYMENT LINK
 async function createPaymentLink(req, res, next) {
   try {
-    const { productName, customerName, customerEmail, customerPhone } =
-      req.body;
+    const {
+      productName,
+      customerName,
+      customerEmail,
+      customerPhone,
+      currency = "USD", // ← NEW: frontend sends this, fallback to USD
+    } = req.body;
 
-    const amount = PRODUCTS[productName];
+    const baseAmountUSD = PRODUCTS[productName];
 
-    if (!amount) {
+    if (!baseAmountUSD) {
       return res.status(400).json({ error: "Unknown product" });
     }
+
+    // Convert from USD to the user's currency server-side ← NEW
+    const amount = await convertFromUSD(baseAmountUSD, currency);
 
     const txRef = `CONV-${Date.now()}`;
 
@@ -39,6 +48,7 @@ async function createPaymentLink(req, res, next) {
       customerEmail,
       customerPhone,
       amount,
+      currency, // ← NEW: passed through to Flutterwave
       txRef,
     });
 
@@ -49,7 +59,7 @@ async function createPaymentLink(req, res, next) {
   }
 }
 
-// WEBHOOK
+// WEBHOOK — unchanged
 async function handleWebhook(req, res) {
   try {
     const payload = req.body?.toString?.()
@@ -108,14 +118,14 @@ async function handleWebhook(req, res) {
   }
 }
 
-// VERIFY PAYMENT
+// VERIFY PAYMENT — unchanged
 async function verifyPayment(req, res) {
   try {
     const { transaction_id } = req.params;
 
     const response = await verifyTransaction(transaction_id);
 
-    const data = response; // FIX: no nested .data.data
+    const data = response;
 
     if (!data || data.status !== "successful") {
       return res.json({ success: false, paid: false });

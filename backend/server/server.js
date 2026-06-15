@@ -32,7 +32,6 @@ app.use(
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
-
       return callback(null, false);
     },
     methods: ["GET", "POST", "OPTIONS"],
@@ -43,7 +42,6 @@ app.use(
 
 app.use(helmet());
 
-// JSON AFTER webhook raw middleware
 app.use((req, res, next) => {
   next();
 });
@@ -51,10 +49,10 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 // ROUTES LOADING
-
 app.use("/api", require("./routes/payment"));
 app.use("/api", require("./routes/customer"));
 app.use("/api/onboarding", onboardingRoutes);
+app.use("/api/currency", require("./routes/currency")); // ← NEW
 
 const PORT = process.env.PORT || 5001;
 
