@@ -58,17 +58,14 @@ async function getExchangeRates() {
   }
 
   try {
-    // Free tier, no API key needed
     const response = await axios.get(
       "https://api.frankfurter.app/latest?from=USD&to=NGN,GBP,EUR,GHS,KES,ZAR,CAD,AUD",
       { timeout: 8000 },
     );
 
     const rates = { USD: 1, ...response.data.rates };
-
     rateCache.rates = rates;
     rateCache.lastFetched = now;
-
     return rates;
   } catch (err) {
     console.error(
@@ -90,7 +87,6 @@ async function getExchangeRates() {
 
     rateCache.rates = fallback;
     rateCache.lastFetched = now - CACHE_TTL_MS + 30 * 60 * 1000;
-
     return fallback;
   }
 }
@@ -113,16 +109,13 @@ async function detectCurrencyFromIP(ip) {
       return "USD";
     }
 
-    const geoURL = `http://ip-api.com/json/${cleanIP}?fields=countryCode`;
+    const geoURL = `https://ipapi.co/${cleanIP}/country/`;
     console.log("📡 [detectCurrencyFromIP] Calling geo API:", geoURL);
 
     const response = await axios.get(geoURL, { timeout: 5000 });
-    console.log(
-      "📍 [detectCurrencyFromIP] Geo API response:",
-      JSON.stringify(response.data),
-    );
+    console.log("📍 [detectCurrencyFromIP] Geo API response:", response.data);
 
-    const countryCode = response.data?.countryCode;
+    const countryCode = response.data?.trim();
     console.log("🗺️ [detectCurrencyFromIP] Country code:", countryCode);
 
     const resolvedCurrency = COUNTRY_CURRENCY_MAP[countryCode] || "USD";
