@@ -37,13 +37,18 @@ const COUNTRY_CURRENCY_MAP = {
   LU: "EUR",
 };
 
+// ─── NEW: Cloudflare country → currency helper ────────────────────────────────
+function detectCurrencyFromCountry(countryCode) {
+  return COUNTRY_CURRENCY_MAP[countryCode] || "USD";
+}
+
 // ─── In-memory rate cache ─────────────────────────────────────────────────────
 let rateCache = {
   rates: null,
   lastFetched: null,
 };
 
-const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
+const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 
 // ─── Fetch exchange rates (USD as base) ───────────────────────────────────────
 async function getExchangeRates() {
@@ -65,6 +70,7 @@ async function getExchangeRates() {
     const all = response.data.rates;
     const needed = ["NGN", "GBP", "EUR", "GHS", "KES", "ZAR", "CAD", "AUD"];
     const rates = { USD: 1 };
+
     needed.forEach((c) => {
       if (all[c]) rates[c] = all[c];
     });
@@ -98,7 +104,7 @@ async function getExchangeRates() {
   }
 }
 
-// ─── Detect currency from IP ──────────────────────────────────────────────────
+// ─── Detect currency from IP (fallback only) ──────────────────────────────────
 async function detectCurrencyFromIP(ip) {
   try {
     const cleanIP = ip?.replace("::ffff:", "") || "";
@@ -110,42 +116,33 @@ async function detectCurrencyFromIP(ip) {
       cleanIP.startsWith("192.168") ||
       cleanIP.startsWith("10.")
     ) {
-      console.log(
-        "🏠 [detectCurrencyFromIP] Local/private IP detected, defaulting to USD",
-      );
+      console.log("🏠 Local IP detected, defaulting to USD");
       return "USD";
     }
 
     const geoURL = `https://ipapi.co/${cleanIP}/country/`;
-    console.log("📡 [detectCurrencyFromIP] Calling geo API:", geoURL);
+    console.log("📡 Calling geo API:", geoURL);
 
     const response = await axios.get(geoURL, { timeout: 5000 });
-    console.log("📍 [detectCurrencyFromIP] Geo API response:", response.data);
 
     const countryCode = response.data?.trim();
-    console.log("🗺️ [detectCurrencyFromIP] Country code:", countryCode);
+    console.log("🗺️ Country code:", countryCode);
 
-    const resolvedCurrency = COUNTRY_CURRENCY_MAP[countryCode] || "USD";
-    console.log(
-      "✅ [detectCurrencyFromIP] Resolved currency:",
-      resolvedCurrency,
-    );
-
-    return resolvedCurrency;
+    return COUNTRY_CURRENCY_MAP[countryCode] || "USD";
   } catch (err) {
     console.error("⚠️ IP detection failed, defaulting to USD:", err.message);
     return "USD";
   }
 }
 
-// ─── Apply charm pricing / rounding (shared with frontend display logic) ──────
+// ─── Pricing helpers ──────────────────────────────────────────────────────────
 function applyCharmPricing(amount, currency) {
   const roundTo1000 = ["NGN"];
   const roundTo10 = ["KES", "GHS"];
 
   if (roundTo1000.includes(currency)) {
     const rounded = Math.ceil(amount / 1000) * 1000;
-    return rounded - 100; // e.g. 640000 -> 639900
+    return rounded - 100;
   }
 
   if (roundTo10.includes(currency)) {
@@ -154,12 +151,10 @@ function applyCharmPricing(amount, currency) {
     return charmed % 100 === 0 ? charmed - 10 : charmed;
   }
 
-  // Decimal currencies, charm-priced to end in .99
   const rounded = Math.ceil(amount);
   return parseFloat((rounded - 0.01).toFixed(2));
 }
 
-// ─── Convert a USD amount to target currency (with charm pricing applied) ─────
 async function convertFromUSD(amountUSD, targetCurrency) {
   if (targetCurrency === "USD") {
     return applyCharmPricing(amountUSD, "USD");
@@ -174,7 +169,6 @@ async function convertFromUSD(amountUSD, targetCurrency) {
   return applyCharmPricing(converted, targetCurrency);
 }
 
-// ─── Build full pricing payload for a currency ────────────────────────────────
 async function getPricingForCurrency(currency) {
   const validCurrency = SUPPORTED_CURRENCIES[currency] ? currency : "USD";
   const rates = await getExchangeRates();
@@ -184,9 +178,11 @@ async function getPricingForCurrency(currency) {
   return { currency: validCurrency, symbol, rate };
 }
 
+// ─── EXPORTS ───────────────────────────────────────────────────────────────────
 module.exports = {
   SUPPORTED_CURRENCIES,
   detectCurrencyFromIP,
+  detectCurrencyFromCountry, // ✅ NEW
   convertFromUSD,
   getPricingForCurrency,
   applyCharmPricing,

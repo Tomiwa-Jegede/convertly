@@ -15,22 +15,38 @@ router.get("/detect", async (req, res) => {
       JSON.stringify(req.headers, null, 2),
     );
 
+    let currency;
 
-    const ip =
-      req.headers["cf-connecting-ip"] ||
-      req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
-      req.headers["x-nf-client-connection-ip"] ||
-      req.headers["true-client-ip"] ||
-      req.socket?.remoteAddress ||
-      req.ip ||
-      "";
+    // 1. FIRST: Use Cloudflare country header
+    const cloudflareCountry = req.headers["cf-ipcountry"];
 
-    console.log("🌐 [currency/detect] Resolved IP:", ip);
+    if (cloudflareCountry) {
+      console.log(
+        "☁️ [currency/detect] Cloudflare country:",
+        cloudflareCountry,
+      );
 
-    const currency = await detectCurrencyFromIP(ip);
+      currency = detectCurrencyFromCountry(cloudflareCountry);
+    } else {
+      // 2. FALLBACK: Use IP detection
+      const ip =
+        req.headers["cf-connecting-ip"] ||
+        req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
+        req.headers["x-nf-client-connection-ip"] ||
+        req.headers["true-client-ip"] ||
+        req.socket?.remoteAddress ||
+        req.ip ||
+        "";
+
+      console.log("🌐 [currency/detect] Resolved IP:", ip);
+
+      currency = await detectCurrencyFromIP(ip);
+    }
+
     console.log("💱 [currency/detect] Detected currency:", currency);
 
     const pricing = await getPricingForCurrency(currency);
+
     console.log("💰 [currency/detect] Final pricing:", pricing);
 
     return res.json({
@@ -40,7 +56,12 @@ router.get("/detect", async (req, res) => {
     });
   } catch (err) {
     console.error("❌ Currency detect error:", err);
-    return res.json({ currency: "USD", symbol: "$", rate: 1 });
+
+    return res.json({
+      currency: "USD",
+      symbol: "$",
+      rate: 1,
+    });
   }
 });
 
