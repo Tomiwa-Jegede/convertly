@@ -2,39 +2,30 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 require("dotenv").config();
-console.log("🌍 FRONTEND_URL:", process.env.FRONTEND_URL);
-console.log("✅ Allowed origins:", allowedOrigins);
 
 const app = express();
-app.set("trust proxy", true); // ← add this
+app.set("trust proxy", true);
 
-const onboardingRoutes = require("./routes/onboarding");
-
-// IMPORTANT: webhook RAW body MUST come before JSON middleware
-app.use("/api/flutterwave/webhook", (req, res, next) => {
-  next();
-});
-
-app.use("/api/flutterwave/webhook", express.raw({ type: "application/json" }));
-
-// CORS DEBUG
+// Define BEFORE any console.log that references it
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   "http://localhost:3001",
   "http://localhost:5173",
 ].filter(Boolean);
 
-app.use((req, res, next) => {
-  next();
-});
+console.log("🌍 FRONTEND_URL:", process.env.FRONTEND_URL);
+console.log("✅ Allowed origins:", allowedOrigins);
+
+const onboardingRoutes = require("./routes/onboarding");
+
+// IMPORTANT: webhook raw body MUST come before express.json()
+app.use("/api/flutterwave/webhook", express.raw({ type: "application/json" }));
 
 app.use(
   cors({
     origin: function (origin, callback) {
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
+      if (allowedOrigins.includes(origin)) return callback(null, true);
       return callback(null, false);
     },
     methods: ["GET", "POST", "OPTIONS"],
@@ -44,21 +35,16 @@ app.use(
 );
 
 app.use(helmet());
-
-app.use((req, res, next) => {
-  next();
-});
-
 app.use(express.json());
 
-// ROUTES LOADING
+// Routes
 app.use("/api", require("./routes/payment"));
 app.use("/api", require("./routes/customer"));
 app.use("/api/onboarding", onboardingRoutes);
-app.use("/api/currency", require("./routes/currency")); // ← NEW
+app.use("/api/currency", require("./routes/currency"));
 
 const PORT = process.env.PORT || 5001;
 
-app.listen(PORT, () => {});
-
-console.log(`🚀 Server running on port ${PORT}`);
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`); // ✅ now inside the callback
+});
