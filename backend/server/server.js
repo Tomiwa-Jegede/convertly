@@ -2,6 +2,8 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 require("dotenv").config();
+console.log("🌍 FRONTEND_URL:", process.env.FRONTEND_URL);
+console.log("✅ Allowed origins:", allowedOrigins);
 
 const app = express();
 app.set("trust proxy", true); // ← add this
