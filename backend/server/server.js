@@ -4,6 +4,7 @@ const helmet = require("helmet");
 require("dotenv").config();
 
 const app = express();
+app.set("trust proxy", true); // ← add this
 
 const onboardingRoutes = require("./routes/onboarding");
 

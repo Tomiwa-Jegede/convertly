@@ -11,8 +11,9 @@ const {
 router.get("/detect", async (req, res) => {
   try {
     const ip =
+      req.headers["x-nf-client-connection-ip"] || // ← Netlify's real client IP
       req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
-      req.headers["cf-connecting-ip"] || // Cloudflare (if ever used)
+      req.headers["cf-connecting-ip"] ||
       req.headers["true-client-ip"] ||
       req.socket?.remoteAddress ||
       req.ip ||
