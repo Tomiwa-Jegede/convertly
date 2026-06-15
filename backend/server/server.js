@@ -13,28 +13,34 @@ const allowedOrigins = [
   "http://localhost:5173",
 ].filter(Boolean);
 
-console.log("🌍 FRONTEND_URL:", process.env.FRONTEND_URL);
-console.log("✅ Allowed origins:", allowedOrigins);
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(null, false);
+  },
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+};
 
-const onboardingRoutes = require("./routes/onboarding");
+// 1. Pre-flight first
+app.options("*", cors(corsOptions));
 
-// IMPORTANT: webhook raw body MUST come before express.json()
-app.use("/api/flutterwave/webhook", express.raw({ type: "application/json" }));
+// 2. CORS before everything else
+app.use(cors(corsOptions));
 
+// 3. Helmet after CORS, with CORP set to cross-origin
 app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-      return callback(null, false);
-    },
-    methods: ["GET", "POST", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
   }),
 );
 
-app.use(helmet());
+// 4. Webhook raw body (before express.json)
+app.use("/api/flutterwave/webhook", express.raw({ type: "application/json" }));
+
+// 5. JSON body parser
 app.use(express.json());
 
 // Routes
