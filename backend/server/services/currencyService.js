@@ -76,7 +76,6 @@ async function getExchangeRates() {
       err.message,
     );
 
-    // Fallback hardcoded rates — update these occasionally as a safety net
     const fallback = {
       USD: 1,
       NGN: 1600,
@@ -89,7 +88,6 @@ async function getExchangeRates() {
       AUD: 1.53,
     };
 
-    // Only cache fallback for 30 minutes so it retries sooner
     rateCache.rates = fallback;
     rateCache.lastFetched = now - CACHE_TTL_MS + 30 * 60 * 1000;
 
@@ -100,26 +98,40 @@ async function getExchangeRates() {
 // ─── Detect currency from IP ──────────────────────────────────────────────────
 async function detectCurrencyFromIP(ip) {
   try {
-    // Strip IPv6 prefix if present (e.g. ::ffff:127.0.0.1)
     const cleanIP = ip?.replace("::ffff:", "") || "";
+    console.log("🧹 [detectCurrencyFromIP] Clean IP:", cleanIP);
 
-    // Localhost / private IPs — default to USD
     if (
       !cleanIP ||
       cleanIP === "127.0.0.1" ||
       cleanIP.startsWith("192.168") ||
       cleanIP.startsWith("10.")
     ) {
+      console.log(
+        "🏠 [detectCurrencyFromIP] Local/private IP detected, defaulting to USD",
+      );
       return "USD";
     }
 
-    const response = await axios.get(
-      `http://ip-api.com/json/${cleanIP}?fields=countryCode`,
-      { timeout: 5000 },
+    const geoURL = `http://ip-api.com/json/${cleanIP}?fields=countryCode`;
+    console.log("📡 [detectCurrencyFromIP] Calling geo API:", geoURL);
+
+    const response = await axios.get(geoURL, { timeout: 5000 });
+    console.log(
+      "📍 [detectCurrencyFromIP] Geo API response:",
+      JSON.stringify(response.data),
     );
 
     const countryCode = response.data?.countryCode;
-    return COUNTRY_CURRENCY_MAP[countryCode] || "USD";
+    console.log("🗺️ [detectCurrencyFromIP] Country code:", countryCode);
+
+    const resolvedCurrency = COUNTRY_CURRENCY_MAP[countryCode] || "USD";
+    console.log(
+      "✅ [detectCurrencyFromIP] Resolved currency:",
+      resolvedCurrency,
+    );
+
+    return resolvedCurrency;
   } catch (err) {
     console.error("⚠️ IP detection failed, defaulting to USD:", err.message);
     return "USD";
