@@ -138,16 +138,40 @@ async function detectCurrencyFromIP(ip) {
   }
 }
 
-// ─── Convert a USD amount to target currency ──────────────────────────────────
+// ─── Apply charm pricing / rounding (shared with frontend display logic) ──────
+function applyCharmPricing(amount, currency) {
+  const roundTo1000 = ["NGN"];
+  const roundTo10 = ["KES", "GHS"];
+
+  if (roundTo1000.includes(currency)) {
+    const rounded = Math.ceil(amount / 1000) * 1000;
+    return rounded - 100; // e.g. 640000 -> 639900
+  }
+
+  if (roundTo10.includes(currency)) {
+    const rounded = Math.ceil(amount / 10) * 10;
+    const charmed = rounded - 10;
+    return charmed % 100 === 0 ? charmed - 10 : charmed;
+  }
+
+  // Decimal currencies, charm-priced to end in .99
+  const rounded = Math.ceil(amount);
+  return parseFloat((rounded - 0.01).toFixed(2));
+}
+
+// ─── Convert a USD amount to target currency (with charm pricing applied) ─────
 async function convertFromUSD(amountUSD, targetCurrency) {
-  if (targetCurrency === "USD") return amountUSD;
+  if (targetCurrency === "USD") {
+    return applyCharmPricing(amountUSD, "USD");
+  }
 
   const rates = await getExchangeRates();
   const rate = rates[targetCurrency];
 
-  if (!rate) return amountUSD;
+  if (!rate) return applyCharmPricing(amountUSD, "USD");
 
-  return parseFloat((amountUSD * rate).toFixed(2));
+  const converted = amountUSD * rate;
+  return applyCharmPricing(converted, targetCurrency);
 }
 
 // ─── Build full pricing payload for a currency ────────────────────────────────
@@ -165,4 +189,5 @@ module.exports = {
   detectCurrencyFromIP,
   convertFromUSD,
   getPricingForCurrency,
+  applyCharmPricing,
 };

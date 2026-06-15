@@ -5,6 +5,7 @@ require("dotenv").config();
 
 const app = express();
 app.set("trust proxy", true);
+const onboardingRoutes = require("./routes/onboarding");
 
 // Define BEFORE any console.log that references it
 const allowedOrigins = [

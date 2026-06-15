@@ -15,10 +15,11 @@ router.get("/detect", async (req, res) => {
       JSON.stringify(req.headers, null, 2),
     );
 
+
     const ip =
-      req.headers["x-nf-client-connection-ip"] ||
-      req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
       req.headers["cf-connecting-ip"] ||
+      req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
+      req.headers["x-nf-client-connection-ip"] ||
       req.headers["true-client-ip"] ||
       req.socket?.remoteAddress ||
       req.ip ||

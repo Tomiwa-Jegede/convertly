@@ -4,13 +4,14 @@ import { Icon } from "../../components";
 import C from "../../styles/colors";
 import { useState } from "react";
 import Checkout from "../Checkout/checkout.jsx";
+import { useCurrency } from "../../context/CurrencyContext";
 
 const services = [
   {
     icon: "globe",
     color: C.cyan,
     title: "Conversion Websites for Listings",
-    price: "From $399.99",
+    priceUSD: 399.99,
     features: [
       "Mobile-first responsive design",
       "Built-in booking forms",
@@ -23,7 +24,7 @@ const services = [
     icon: "bot",
     color: C.emerald,
     title: "AI Customer Response Bots",
-    price: "From $399.99",
+    priceUSD: 399.99,
     features: [
       "WhatsApp automation",
       "Web chat widget",
@@ -36,7 +37,7 @@ const services = [
     icon: "calendar",
     color: "#A78BFA",
     title: "Booking System Integration",
-    price: "From $199.99",
+    priceUSD: 199.99,
     features: [
       "Google Calendar sync",
       "Availability management",
@@ -49,7 +50,7 @@ const services = [
     icon: "chart",
     color: "#FB923C",
     title: "Lead Tracking Dashboards",
-    price: "From $299.99",
+    priceUSD: 299.99,
     features: [
       "Google Sheets CRM setup",
       "Lead source tracking",
@@ -62,7 +63,7 @@ const services = [
     icon: "zap",
     color: C.cyan,
     title: "Social Media Lead Automation",
-    price: "From $299.99",
+    priceUSD: 299.99,
     features: [
       "Instagram DM auto-reply",
       "Facebook Messenger bot",
@@ -75,7 +76,7 @@ const services = [
     icon: "database",
     color: C.emerald,
     title: "Data & Inquiry Management",
-    price: "From $199.99",
+    priceUSD: 199.99,
     features: [
       "Inquiry pipeline setup",
       "Auto-categorization",
@@ -86,8 +87,11 @@ const services = [
   },
 ];
 
+const BUNDLE_PRICE_USD = 1499.99;
+
 export default function ServicesPage() {
   const API_URL = import.meta.env.VITE_API_URL;
+  const { currency, symbol, rate, formatPrice } = useCurrency();
 
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [selectedService, setSelectedService] = useState(null);
@@ -137,6 +141,7 @@ export default function ServicesPage() {
           customerName,
           customerEmail,
           customerPhone,
+          currency, // ← send detected/active currency so backend converts to match
         }),
       });
 
@@ -203,7 +208,7 @@ export default function ServicesPage() {
             gap: 28,
           }}
         >
-          {services.map(({ icon, color, title, price, features }, i) => (
+          {services.map(({ icon, color, title, priceUSD, features }, i) => (
             <FadeIn key={title} delay={i * 0.07}>
               <motion.div
                 className="card-glass"
@@ -251,7 +256,7 @@ export default function ServicesPage() {
                       borderRadius: 8,
                     }}
                   >
-                    {price}
+                    From {formatPrice(priceUSD, currency, symbol, rate)}
                   </span>
                 </div>
 
@@ -360,7 +365,8 @@ export default function ServicesPage() {
               }}
             >
               Our full-stack Conversion System packages combine everything into
-              one integrated revenue engine, starting at $1499.99
+              one integrated revenue engine, starting at{" "}
+              {formatPrice(BUNDLE_PRICE_USD, currency, symbol, rate)}
             </p>
 
             <button
